@@ -11,12 +11,16 @@
       /____/                             /____/
 ```
 
-**Daily health check ping for Claude Code CLI**
+**Daily health check ping for AI coding CLI tools**
 
-[![Platform: macOS | Linux](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-blue)](#installation)
+[![Platform: macOS | Linux](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-blue)](#supported-platforms)
 [![Shell: Bash](https://img.shields.io/badge/shell-bash-green)](https://www.gnu.org/software/bash/)
-[![Model: claude-opus-4-6](https://img.shields.io/badge/model-claude--opus--4--6-blueviolet)](https://docs.anthropic.com)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
+
+[![CLI: Claude](https://img.shields.io/badge/cli-claude-blueviolet)](https://docs.anthropic.com)
+[![CLI: Codex](https://img.shields.io/badge/cli-codex-black)](https://github.com/openai/codex)
+[![CLI: OpenCode](https://img.shields.io/badge/cli-opencode-orange)](https://github.com/opencode-ai/opencode)
+[![CLI: Gemini](https://img.shields.io/badge/cli-gemini-4285F4)](https://github.com/google-gemini/gemini-cli)
 
 </div>
 
@@ -24,14 +28,25 @@
 
 ## What it does
 
-Sends a `ping` to the Claude Code CLI using the `claude-opus-4-6` model every day at **07:00 KST**. If the call fails, it retries up to 10 times with increasing backoff. Each run produces a timestamped log file.
+Sends a `ping` to your AI coding CLI (Claude, Codex, OpenCode, or Gemini) on a daily schedule. If the call fails, it retries up to 10 times with increasing backoff. Each run produces a timestamped log file.
 
-## Status
+## Supported CLIs
+
+| CLI | Default Model | Tested |
+|-----|---------------|--------|
+| `claude` | `claude-opus-4-6` | Yes |
+| `codex` | `o4-mini` | Yes |
+| `opencode` | `claude-opus-4-6` | Yes |
+| `gemini` | `gemini-2.5-pro` | Yes |
+
+## Supported Platforms
 
 | Target | Scheduler | Status |
 |--------|-----------|--------|
 | macOS  | launchd   | Supported |
 | Linux  | systemd   | Supported |
+
+Tested on: Ubuntu, Debian, Alpine, Fedora, openSUSE, Kali, Rocky, CentOS, Amazon Linux, Oracle Linux, AlmaLinux, Gentoo
 
 ## Quickstart (for agents)
 
@@ -39,13 +54,13 @@ Sends a `ping` to the Claude Code CLI using the `claude-opus-4-6` model every da
 git clone https://github.com/hletrd/agentping.git && cd agentping && ./install.sh
 ```
 
-That's it. Runs daily at 07:00 KST. Logs in `./logs/`.
+That's it. Runs daily at 07:00 KST with Claude Opus by default. Edit `config.sh` to change CLI, model, or schedule.
 
 ## Slowstart (for humans)
 
 ### Prerequisites
 
-- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) installed and authenticated
+- One of: [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex](https://github.com/openai/codex), [OpenCode](https://github.com/opencode-ai/opencode), or [Gemini CLI](https://github.com/google-gemini/gemini-cli) — installed and authenticated
 - Bash 4+
 - macOS (launchd) or Linux (systemd)
 
@@ -56,7 +71,24 @@ git clone https://github.com/hletrd/agentping.git
 cd agentping
 ```
 
-### 2. Test manually
+### 2. Configure (optional)
+
+Edit `config.sh`:
+
+```bash
+# CLI tool: claude | codex | opencode | gemini
+CLI="claude"
+
+# Model
+MODEL="claude-opus-4-6"
+
+# Schedule (24h)
+SCHEDULE_HOUR=7
+SCHEDULE_MINUTE=0
+SCHEDULE_TZ="Asia/Seoul"
+```
+
+### 3. Test manually
 
 ```bash
 ./agentping.sh
@@ -64,25 +96,24 @@ cd agentping
 
 Check the output — you should see `OK:` followed by a response. A log file is created in `./logs/`.
 
-### 3. Install the daily schedule
+### 4. Install the daily schedule
 
 ```bash
 ./install.sh
 ```
 
-This registers a daily job at **07:00 KST** using:
+This registers a daily job using:
 - **macOS**: `launchd` (via `~/Library/LaunchAgents/com.agentping.daily.plist`)
 - **Linux**: `systemd` user timer (via `~/.config/systemd/user/agentping.timer`)
 
-### 4. Check logs
+### 5. Check logs
 
 ```bash
 ls logs/
-# 20260313-070001.log
 # 20260314-070000.log
 
 cat logs/20260314-070000.log
-# [2026-03-14 07:00:00 KST] agentping: starting health check
+# [2026-03-14 07:00:00 KST] agentping: starting health check (cli=claude model=claude-opus-4-6)
 # [2026-03-14 07:00:02 KST] attempt 1/10
 # [2026-03-14 07:00:05 KST] OK: Pong!
 ```
@@ -103,13 +134,26 @@ rm ~/.config/systemd/user/agentping.{service,timer}
 
 ## Configuration
 
-Edit `agentping.sh` to change defaults:
+All settings in `config.sh`:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `CLI` | `claude` | CLI tool (`claude`, `codex`, `opencode`, `gemini`) |
+| `MODEL` | `claude-opus-4-6` | Model name passed via `--model` |
+| `SCHEDULE_HOUR` | `7` | Hour to run (24h) |
+| `SCHEDULE_MINUTE` | `0` | Minute to run |
+| `SCHEDULE_TZ` | `Asia/Seoul` | Timezone |
 | `MAX_RETRIES` | `10` | Max retry attempts |
-| `RETRY_DELAY` | `30` | Base delay between retries (seconds, multiplied by attempt number) |
-| `TIMEOUT` | `120` | Timeout per claude call (seconds) |
+| `RETRY_DELAY` | `30` | Base delay between retries (seconds, multiplied by attempt) |
+| `TIMEOUT` | `120` | Timeout per CLI call (seconds) |
+
+## Testing
+
+Run the cross-distro Docker test suite:
+
+```bash
+./test.sh
+```
 
 ## License
 

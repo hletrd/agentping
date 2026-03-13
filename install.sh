@@ -3,17 +3,57 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# load config
+if [ -f "$SCRIPT_DIR/config.sh" ]; then
+  # shellcheck source=config.sh
+  source "$SCRIPT_DIR/config.sh"
+fi
+
+SCHEDULE_HOUR="${SCHEDULE_HOUR:-7}"
+SCHEDULE_MINUTE="${SCHEDULE_MINUTE:-0}"
+SCHEDULE_TZ="${SCHEDULE_TZ:-Asia/Seoul}"
+
 install_macos() {
   local PLIST_NAME="com.agentping.daily"
-  local PLIST_SRC="$SCRIPT_DIR/$PLIST_NAME.plist"
   local PLIST_DST="$HOME/Library/LaunchAgents/$PLIST_NAME.plist"
 
   mkdir -p "$HOME/Library/LaunchAgents"
   launchctl bootout "gui/$(id -u)/$PLIST_NAME" 2>/dev/null || true
-  cp "$PLIST_SRC" "$PLIST_DST"
+
+  cat > "$PLIST_DST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>$PLIST_NAME</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>$SCRIPT_DIR/agentping.sh</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>$SCHEDULE_HOUR</integer>
+    <key>Minute</key>
+    <integer>$SCHEDULE_MINUTE</integer>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>$SCRIPT_DIR/logs/launchd.log</string>
+  <key>StandardErrorPath</key>
+  <string>$SCRIPT_DIR/logs/launchd.log</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>
+  </dict>
+</dict>
+</plist>
+EOF
+
   launchctl bootstrap "gui/$(id -u)" "$PLIST_DST"
 
-  echo "installed (launchd). runs daily at 07:00 KST."
+  echo "installed (launchd). runs daily at $(printf '%02d:%02d' "$SCHEDULE_HOUR" "$SCHEDULE_MINUTE") $SCHEDULE_TZ."
   echo "uninstall: launchctl bootout gui/$(id -u)/$PLIST_NAME"
 }
 
@@ -23,7 +63,7 @@ install_linux() {
 
   cat > "$SERVICE_DIR/agentping.service" <<EOF
 [Unit]
-Description=agentping - Claude Code health check
+Description=agentping - AI CLI health check
 
 [Service]
 Type=oneshot
@@ -33,10 +73,10 @@ EOF
 
   cat > "$SERVICE_DIR/agentping.timer" <<EOF
 [Unit]
-Description=agentping daily at 07:00 KST
+Description=agentping daily at $(printf '%02d:%02d' "$SCHEDULE_HOUR" "$SCHEDULE_MINUTE") $SCHEDULE_TZ
 
 [Timer]
-OnCalendar=*-*-* 07:00:00 Asia/Seoul
+OnCalendar=*-*-* $(printf '%02d:%02d:00' "$SCHEDULE_HOUR" "$SCHEDULE_MINUTE") $SCHEDULE_TZ
 Persistent=true
 
 [Install]
@@ -46,7 +86,7 @@ EOF
   systemctl --user daemon-reload
   systemctl --user enable --now agentping.timer
 
-  echo "installed (systemd). runs daily at 07:00 KST."
+  echo "installed (systemd). runs daily at $(printf '%02d:%02d' "$SCHEDULE_HOUR" "$SCHEDULE_MINUTE") $SCHEDULE_TZ."
   echo "uninstall: systemctl --user disable --now agentping.timer"
 }
 

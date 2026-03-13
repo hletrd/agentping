@@ -1,12 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MAX_RETRIES=10
-RETRY_DELAY=30
-TIMEOUT=120
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# load config
+if [ -f "$SCRIPT_DIR/config.sh" ]; then
+  # shellcheck source=config.sh
+  source "$SCRIPT_DIR/config.sh"
+fi
+
+# defaults
+CLI="${CLI:-claude}"
+MODEL="${MODEL:-claude-opus-4-6}"
+MAX_RETRIES="${MAX_RETRIES:-10}"
+RETRY_DELAY="${RETRY_DELAY:-30}"
+TIMEOUT="${TIMEOUT:-120}"
+SCHEDULE_TZ="${SCHEDULE_TZ:-Asia/Seoul}"
+
 LOG_DIR="$SCRIPT_DIR/logs"
-LOG_FILE="$LOG_DIR/$(TZ=Asia/Seoul date '+%Y%m%d-%H%M%S').log"
+LOG_FILE="$LOG_DIR/$(TZ="$SCHEDULE_TZ" date '+%Y%m%d-%H%M%S').log"
 
 mkdir -p "$LOG_DIR"
 
@@ -19,25 +31,39 @@ else
   TIMEOUT_CMD=""
 fi
 
-run_claude() {
+run_ping() {
+  local cmd
+  case "$CLI" in
+    claude)
+      cmd="claude -p ping --model $MODEL" ;;
+    codex)
+      cmd="codex -q ping --model $MODEL" ;;
+    opencode)
+      cmd="opencode -p ping --model $MODEL" ;;
+    gemini)
+      cmd="gemini -p ping --model $MODEL" ;;
+    *)
+      cmd="$CLI -p ping --model $MODEL" ;;
+  esac
+
   if [ -n "$TIMEOUT_CMD" ]; then
-    $TIMEOUT_CMD "$TIMEOUT" claude -p "ping" --model claude-opus-4-6 2>&1
+    $TIMEOUT_CMD "$TIMEOUT" $cmd 2>&1
   else
-    claude -p "ping" --model claude-opus-4-6 2>&1
+    $cmd 2>&1
   fi
 }
 
 log() {
-  echo "[$(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S KST')] $*" | tee -a "$LOG_FILE"
+  echo "[$(TZ="$SCHEDULE_TZ" date '+%Y-%m-%d %H:%M:%S %Z')] $*" | tee -a "$LOG_FILE"
 }
 
 main() {
-  log "agentping: starting health check"
+  log "agentping: starting health check (cli=$CLI model=$MODEL)"
 
   for attempt in $(seq 1 "$MAX_RETRIES"); do
     log "attempt $attempt/$MAX_RETRIES"
 
-    if response=$(run_claude); then
+    if response=$(run_ping); then
       log "OK: ${response:0:200}"
       exit 0
     else
