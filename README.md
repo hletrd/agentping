@@ -1,6 +1,6 @@
-# agentping
-
 <div align="center">
+
+# agentping
 
 ```
     ___                    __  ____  _
@@ -35,9 +35,9 @@ Sends a `ping` to your AI coding CLI (Claude, Codex, OpenCode, or Gemini) on a d
 | CLI | Default Model | Tested |
 |-----|---------------|--------|
 | `claude` | `claude-opus-4-6` | Yes |
-| `codex` | `o4-mini` | Yes |
+| `codex` | `gpt-5.4` | Yes |
 | `opencode` | `claude-opus-4-6` | Yes |
-| `gemini` | `gemini-2.5-pro` | Yes |
+| `gemini` | `gemini-3.1-pro-preview` | Yes |
 
 ## Supported Platforms
 
