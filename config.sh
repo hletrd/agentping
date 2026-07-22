@@ -4,7 +4,7 @@
 CLI="claude"
 
 # Model per CLI (used as --model argument)
-MODEL="claude-opus-4-6"
+MODEL="claude-opus-4-8"
 
 # Schedule time (24h, used by install.sh)
 SCHEDULE_HOUR=7

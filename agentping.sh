@@ -11,7 +11,7 @@ fi
 
 # defaults
 CLI="${CLI:-claude}"
-MODEL="${MODEL:-claude-opus-4-6}"
+MODEL="${MODEL:-claude-opus-4-8}"
 MAX_RETRIES="${MAX_RETRIES:-10}"
 RETRY_DELAY="${RETRY_DELAY:-30}"
 TIMEOUT="${TIMEOUT:-120}"

@@ -34,10 +34,10 @@ Sends a `ping` to your AI coding CLI (Claude, Codex, OpenCode, or Gemini) on a d
 
 | CLI | Default Model | Tested |
 |-----|---------------|--------|
-| `claude` | `claude-opus-4-6` | Yes |
-| `codex` | `gpt-5.4` | Yes |
-| `opencode` | `claude-opus-4-6` | Yes |
-| `gemini` | `gemini-3.1-pro-preview` | Yes |
+| `claude` | `claude-opus-4-8` | Yes |
+| `codex` | `gpt-5.6-sol` | Yes |
+| `opencode` | `claude-opus-4-8` | Yes |
+| `gemini` | `gemini-3.6-flash` | Yes |
 
 ## Supported Platforms
 
@@ -80,7 +80,7 @@ Edit `config.sh`:
 CLI="claude"
 
 # Model
-MODEL="claude-opus-4-6"
+MODEL="claude-opus-4-8"
 
 # Schedule (24h)
 SCHEDULE_HOUR=7
@@ -113,7 +113,7 @@ ls logs/
 # 20260314-070000.log
 
 cat logs/20260314-070000.log
-# [2026-03-14 07:00:00 KST] agentping: starting health check (cli=claude model=claude-opus-4-6)
+# [2026-03-14 07:00:00 KST] agentping: starting health check (cli=claude model=claude-opus-4-8)
 # [2026-03-14 07:00:02 KST] attempt 1/10
 # [2026-03-14 07:00:05 KST] OK: Pong!
 ```
@@ -139,7 +139,7 @@ All settings in `config.sh`:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `CLI` | `claude` | CLI tool (`claude`, `codex`, `opencode`, `gemini`) |
-| `MODEL` | `claude-opus-4-6` | Model name passed via `--model` |
+| `MODEL` | `claude-opus-4-8` | Model name passed via `--model` |
 | `SCHEDULE_HOUR` | `7` | Hour to run (24h) |
 | `SCHEDULE_MINUTE` | `0` | Minute to run |
 | `SCHEDULE_TZ` | `Asia/Seoul` | Timezone |
