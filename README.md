@@ -37,7 +37,7 @@ Sends a `ping` to your AI coding CLI (Claude, Codex, OpenCode, or Gemini) on a d
 | `claude` | `claude-opus-4-8` | Yes |
 | `codex` | `gpt-5.6-sol` | Yes |
 | `opencode` | `claude-opus-4-8` | Yes |
-| `gemini` | `gemini-3.6-flash` | Yes |
+| `gemini` | `gemini-3.7-flash` | Yes |
 
 ## Supported Platforms
 
